@@ -37,14 +37,19 @@ src/
 ├── routes/events.ts     # endpoints REST
 ├── services/
 │   ├── events.service.ts
-│   └── payment.gateway.ts   # à mocker (ex2)
+│   ├── payment.gateway.ts   # à mocker (TP1)
+│   ├── mailer.ts            # dépendance externe à mocker via jest.mock()
+│   └── email-sender.ts      # consomme mailer.ts
 ├── db/index.ts          # SQLite in-memory + seed
 └── public/index.html    # UI minimale (ex4)
 
 tests/
+├── fixtures/
+│   └── events.ts                   # factory makeEvent + seedEvent
 ├── unit/
-│   ├── validation.test.ts          # exemple complet
-│   └── events.service.test.ts      # contient ex2 (it.todo)
+│   ├── validation.test.ts          # exemple matchers + it.each
+│   ├── email-sender.test.ts        # démo jest.mock + jest.mocked + jest.spyOn
+│   └── events.service.test.ts      # contient TP1 (5 it.todo)
 └── integration/
     └── events.api.test.ts          # contient ex3 (it.todo)
 
