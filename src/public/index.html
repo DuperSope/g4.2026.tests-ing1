@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sport Events</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+    .event { border: 1px solid #ddd; padding: 1rem; margin: 1rem 0; border-radius: 8px; }
+    .full { opacity: 0.5; }
+    button { padding: 0.5rem 1rem; cursor: pointer; }
+    button:disabled { cursor: not-allowed; }
+    .success { color: green; margin-top: 1rem; }
+    .error { color: red; margin-top: 1rem; }
+    input { padding: 0.5rem; width: 100%; margin: 0.5rem 0; }
+  </style>
+</head>
+<body>
+  <h1 data-testid="page-title">Événements sportifs</h1>
+  <div id="events" data-testid="events-list"></div>
+
+  <dialog id="register-dialog" data-testid="register-dialog">
+    <form id="register-form">
+      <h2 data-testid="dialog-title">Inscription</h2>
+      <label>Email
+        <input type="email" name="email" data-testid="email-input" required />
+      </label>
+      <button type="submit" data-testid="submit-btn">Confirmer</button>
+      <button type="button" data-testid="cancel-btn" id="cancel">Annuler</button>
+    </form>
+    <p id="message" data-testid="message"></p>
+  </dialog>
+
+  <script>
+    let currentEventId = null;
+    const dialog = document.getElementById('register-dialog');
+    const message = document.getElementById('message');
+
+    async function loadEvents() {
+      const res = await fetch('/api/events');
+      const events = await res.json();
+      const container = document.getElementById('events');
+      container.innerHTML = events.map(e => `
+        <div class="event ${e.registered >= e.capacity ? 'full' : ''}" data-testid="event-${e.id}">
+          <h3 data-testid="event-name">${e.name}</h3>
+          <p data-testid="event-capacity">${e.registered} / ${e.capacity}</p>
+          <button data-testid="register-${e.id}" ${e.registered >= e.capacity ? 'disabled' : ''}
+                  onclick="openDialog('${e.id}')">S'inscrire</button>
+        </div>
+      `).join('');
+    }
+
+    function openDialog(id) {
+      currentEventId = id;
+      message.textContent = '';
+      message.className = '';
+      dialog.showModal();
+    }
+
+    document.getElementById('cancel').addEventListener('click', () => dialog.close());
+
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = e.target.email.value;
+      const res = await fetch(`/api/events/${currentEventId}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, amountCents: 5000 })
+      });
+      if (res.ok) {
+        message.textContent = 'Inscription confirmée !';
+        message.className = 'success';
+        message.setAttribute('data-testid', 'success-message');
+        loadEvents();
+      } else {
+        const body = await res.json();
+        message.textContent = `Erreur : ${body.error}`;
+        message.className = 'error';
+        message.setAttribute('data-testid', 'error-message');
+      }
+    });
+
+    loadEvents();
+  </script>
+</body>
+</html>

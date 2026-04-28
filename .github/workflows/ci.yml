@@ -1,0 +1,44 @@
+name: CI
+
+# ════════════════════════════════════════════════════════════════
+# 🎯 EXERCICE 5 — Pipeline GitHub Actions
+# ════════════════════════════════════════════════════════════════
+# Ce workflow est volontairement INCOMPLET. Il manque 4 étapes :
+#   1. Le cache des dépendances npm (clé basée sur package-lock.json)
+#   2. Le step `npm test` avec génération du rapport de couverture
+#   3. Le gating : faire échouer le job si la couverture est < 70%
+#       (ou si les tests échouent — le step test doit bloquer le job)
+#   4. Le job `deploy` qui ne tourne que sur push sur main, après le job test
+#
+# Modifier ce fichier pour ajouter les steps manquants.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          # TODO (ex5) : activer le cache npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (typecheck)
+        run: npm run lint
+
+      # TODO (ex5) : ajouter le step de tests avec couverture
+
+      # TODO (ex5) : ajouter le gating sur la couverture
+
+  # TODO (ex5) : ajouter le job `deploy` qui dépend de `test`,
+  # ne tourne que sur push sur main, et utilise un environment "production"
